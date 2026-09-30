@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+from contextlib import closing
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
@@ -76,7 +77,7 @@ def test_entries_outside_window_are_pruned_and_ignored(tmp_path: Path) -> None:
         store.mark([_post(id_="old")])
 
     ancient = (datetime.now(UTC) - timedelta(days=30)).isoformat(timespec="seconds")
-    with sqlite3.connect(db) as conn:
+    with closing(sqlite3.connect(db)) as conn, conn:
         conn.execute("UPDATE seen SET seen_at = ?", (ancient,))
 
     old = _post(id_="old")
@@ -86,7 +87,7 @@ def test_entries_outside_window_are_pruned_and_ignored(tmp_path: Path) -> None:
         assert store.filter_new([old]) == [old]
         # Marking a new post prunes the stale row.
         store.mark([fresh])
-        with sqlite3.connect(db) as conn:
+        with closing(sqlite3.connect(db)) as conn:
             remaining = {r[0] for r in conn.execute("SELECT post_id FROM seen")}
     assert remaining == {"fresh"}
 
@@ -96,7 +97,7 @@ def test_mark_is_idempotent(tmp_path: Path) -> None:
         p = _post(id_="a")
         store.mark([p, p])
         store.mark([p])
-        with sqlite3.connect(store.path) as conn:
+        with closing(sqlite3.connect(store.path)) as conn:
             count = conn.execute("SELECT COUNT(*) FROM seen").fetchone()[0]
     assert count == 1
 
