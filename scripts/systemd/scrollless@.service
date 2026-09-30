@@ -1,0 +1,15 @@
+# Templated unit: the instance name (%i) is the edition, which selects
+# config.<edition>.yaml. Installed by scripts/install-systemd.sh.
+[Unit]
+Description=ScrollLess %i digest
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=__PROJECT_ROOT__
+ExecStart="__PROJECT_ROOT__/scripts/run-digest.sh" %i
+# In rss mode Reddit allows about one request per minute, so a normal run
+# takes 15 to 25 minutes. This stops a stuck run from blocking the next one.
+TimeoutStartSec=45min
+# Exit codes: 0 sent, 1 transient failure, 2 configuration or credentials.

@@ -1,0 +1,59 @@
+{{ subject }}
+{{ '=' * subject|length }}
+{% if intro %}
+
+{{ intro }}
+{% endif %}
+{% if not items %}
+
+Nothing new today. Everything worth sending has already gone out this week.
+{% endif %}
+{% macro item_block(item) %}
+{% set p = item.post %}
+{% set s = item.summary %}
+* {{ p.title }}
+{% if p.external_domain %}
+  {{ p.external_domain }}: {{ p.external_url }}
+  discussion: {{ p.url }}
+{% else %}
+  discussion: {{ p.url }}
+{% endif %}
+{% if not p.score_is_estimated %}
+  {{ p.score }} points · {{ p.num_comments }} comments
+{% endif %}
+{% if s.fallback_text %}
+
+  {{ s.fallback_text }}
+{% else %}
+{% if s.gist %}
+
+  {{ s.gist }}
+{% endif %}
+{% for point in s.points %}
+  - {{ point }}
+{% endfor %}
+{% if s.dissent %}
+  | {{ s.dissent }}
+{% endif %}
+{% if s.takeaway %}
+  -> {{ s.takeaway }}
+{% endif %}
+{% endif %}
+{% endmacro %}
+{% if group_by_source %}
+{% for group_label, group_items in grouped %}
+
+{{ group_label }} ({{ group_items|length }})
+{{ '-' * (group_label|length + 4) }}
+{% for item in group_items %}
+{{ item_block(item) }}
+{% endfor %}
+{% endfor %}
+{% else %}
+{% for item in items %}
+{{ item_block(item) }}
+{% endfor %}
+{% endif %}
+
+--
+{{ items|length }} item{% if items|length != 1 %}s{% endif %} · generated {{ generated_at }} · ScrollLess

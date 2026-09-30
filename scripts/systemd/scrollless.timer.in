@@ -1,0 +1,11 @@
+[Unit]
+Description=ScrollLess __EDITION__ digest
+
+[Timer]
+OnCalendar=__SCHEDULE__
+# Run a missed digest at the next boot or wake-up.
+Persistent=true
+Unit=scrollless@__EDITION__.service
+
+[Install]
+WantedBy=timers.target

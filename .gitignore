@@ -1,0 +1,37 @@
+# Secrets and personal configuration
+.env
+.env.*
+!.env.example
+/config.yaml
+/config.*.yaml
+
+# Runtime data
+*.sqlite
+*.sqlite-journal
+*.db
+*.html
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+.python-version
+
+# Tooling
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editors and OS
+.claude/
+.idea/
+.vscode/
+.DS_Store
+._*

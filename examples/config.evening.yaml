@@ -1,0 +1,73 @@
+# Evening edition: deeper reading, tech subreddits and Hacker News.
+# Copy to the project root as config.evening.yaml and edit to taste.
+sources:
+  reddit:
+    # "rss" needs no credentials but Reddit allows about one request per
+    # minute and the feeds carry no scores. "oauth" needs an approved app.
+    access: rss
+    subreddits:
+      - dataengineering
+      - developpeurs
+    sort: top
+    time_filter: day
+    # Score floors only apply in oauth mode (RSS feeds carry no score).
+    min_score: 20
+    min_scores:
+      dataengineering: 20
+      developpeurs: 5
+    max_posts_per_sub: 15
+    max_comments: 15
+    skip_authors:
+      - AutoModerator
+    skip_title_patterns: []
+      # - '^(daily|weekly|monthly)\b.*\b(thread|discussion)\b'
+
+  hacker_news:
+    enabled: true
+    min_score: 50
+    max_posts: 25
+    window_hours: 24
+    tags:
+      - story
+      - ask_hn
+      - show_hn
+    comment_depth: 2
+
+digest:
+  max_items: 16                 # 2 subreddits x 3, plus 10 from Hacker News
+  per_channel_max: 3
+  channel_quotas:
+    hn: 10
+  group_by_source: true
+
+summarization:
+  provider: deepseek            # or: openai
+  model: deepseek-chat
+  max_tokens_per_item: 700
+  language: auto
+  style: |
+    A discussion thread. Summarize it for someone who will not open it.
+    What the discussion adds matters more than what the post says.
+  style_overrides:
+    hn: |
+      A Hacker News thread. The claim or story, then the technical substance
+      of the discussion: benchmarks, counter-examples, war stories, the
+      correction that reframed it. Ignore HN meta-commentary and cheerleading.
+    dataengineering: |
+      A data engineering thread. Keep the specifics: tools named, patterns
+      argued over, cost and scale figures quoted, and the trade-off people
+      actually disagree about.
+    developpeurs: |
+      Un fil de développeurs francophones. Les conseils et retours
+      d'expérience utiles, et les désaccords sur la bonne pratique. Ignore les
+      blagues et le méta-commentaire.
+
+dedup:
+  window_days: 7
+
+email:
+  from: "ScrollLess <sender@example.com>"
+  to:
+    - you@example.com
+  subject_template: "{lead} · {count} items · ScrollLess Evening {date}"
+  format: html

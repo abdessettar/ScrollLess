@@ -1,0 +1,106 @@
+# Morning edition: light reading, sports and community subreddits.
+# Copy to the project root as config.morning.yaml and edit to taste.
+sources:
+  reddit:
+    # "rss" needs no credentials but Reddit allows about one request per
+    # minute and the feeds carry no scores. "oauth" needs an approved app.
+    access: rss
+    subreddits:
+      - nba
+      - soccer
+      - france
+      - BEFreelance
+    # top/day comes back best-first. In rss mode that order is the only
+    # ranking signal, so the collector turns it into a score.
+    sort: top                   # hot, top or new
+    time_filter: day            # for top: hour, day, week, month, year or all
+    # Score floors only apply in oauth mode (RSS feeds carry no score).
+    min_score: 50
+    min_scores:
+      nba: 1000
+      soccer: 800
+      france: 200
+      BEFreelance: 5
+    max_posts_per_sub: 25       # one request either way, and filters thin the pool
+    max_comments: 10
+    request_delay_seconds: 0.2  # courtesy pause; Reddit's rate-limit headers are also honoured
+    skip_authors:
+      - AutoModerator
+    # Highlight clips link to a handful of video hosts, which is a far more
+    # reliable signal than their titles. Subdomains match too.
+    skip_domains:
+      - streamable.com
+      - streamff.pro
+      - streamff.live
+      - streamin.one
+      - streamja.com
+      - dubz.co
+      - dubz.link
+      - v.redd.it
+      - clippituser.tv
+    # Case-insensitive regexes matched against the title.
+    skip_title_patterns:
+      - '^\[(highlight|hl)\]'
+      # Recurring megathreads:
+      # - '^(daily|weekly|monthly)\b.*\b(thread|discussion)\b'
+      # Football goal clips such as "Brentford [3] - 0 Spurs":
+      # - '\[\d+\]\s*-\s*\d+|\d+\s*-\s*\[\d+\]'
+
+  hacker_news:
+    enabled: false              # Hacker News goes in the evening edition
+    min_score: 50
+    max_posts: 0
+    window_hours: 24
+    tags: [story]
+    comment_depth: 1
+
+digest:
+  max_items: 12                 # 4 subreddits x 3
+  per_channel_max: 3            # in rss mode each item costs about a minute of fetching
+  channel_quotas: {}
+  group_by_source: true
+
+summarization:
+  provider: deepseek            # or: openai
+  model: deepseek-chat
+  max_tokens_per_item: 700      # lower values can cut a summary off mid-JSON
+  language: auto                # or a language name, e.g. "English"
+  # Prompts describe what matters in a channel. The output format (gist,
+  # points, dissent, takeaway) is fixed in scrollless/summarizer.py.
+  style: |
+    A Reddit thread. Summarize it for someone who will not open it.
+    What the discussion adds matters more than what the post says.
+  style_overrides:
+    nba: |
+      An NBA thread. What happened (game, trade, injury, report) and how the
+      thread read it: the analysis that stuck, the numbers people cited.
+      Ignore cheering, jokes and GOAT arguments.
+      Most posts here are clips, stat trivia or history: those deserve a gist
+      and nothing else. Transfers, injuries, contracts and front-office
+      decisions are where the discussion is worth reporting.
+    soccer: |
+      A football thread. What happened (match, transfer, decision) and the
+      strongest reactions or tactical takes. Ignore rivalry banter and
+      one-word jokes.
+      Goal clips and score lines deserve a gist and nothing else. Transfers,
+      fees, injuries, refereeing decisions and manager calls are where the
+      thread carries analysis worth reporting.
+    france: |
+      Un fil de r/france. Le sujet (info, polémique, question) et les points
+      de vue les plus marquants du fil, y compris les corrections factuelles.
+      Ignore les memes et les blagues.
+    BEFreelance: |
+      Un fil de freelances belges. Garde ce qui sert en pratique : taux,
+      contrats, fiscalité, outils, recherche de mission. Préfère les chiffres
+      et les retours d'expérience aux opinions générales.
+
+dedup:
+  window_days: 7
+
+email:
+  from: "ScrollLess <sender@example.com>"   # usually the same address as SMTP_USER
+  to:
+    - you@example.com
+  # Placeholders: {lead} (top story title), {count}, {date}.
+  subject_template: "{lead} · {count} items · ScrollLess Morning {date}"
+  format: html                  # html (with a text fallback) or text
